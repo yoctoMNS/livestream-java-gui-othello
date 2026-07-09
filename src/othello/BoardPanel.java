@@ -14,10 +14,14 @@ import javax.swing.JPanel;
  * 描画するだけで、状態を変更することは一切ない。画面描画の責務のみを
  * 持たせることで、ゲームルール({@link Board})や入力処理
  * ({@link GameController})から独立させている。</p>
+ *
+ * <p>背景・黒石・白石を別々の画像として重ね描きするのではなく、
+ * {@link BoardImages} が切り出す「マスの状態ごとのタイル画像」を
+ * そのマスにそのまま1枚敷き詰めるタイルマップ方式で描画している。</p>
  */
 public final class BoardPanel extends JPanel {
 
-    private static final int CELL_SIZE = 60;
+    private static final int CELL_SIZE = BoardImages.TILE_SIZE;
 
     private final Board board;
     private final Cursor cursor;
@@ -31,36 +35,27 @@ public final class BoardPanel extends JPanel {
     }
 
     /**
-     * 盤面全体を「背景 → 石 → カーソル」の順に重ねて描画する。
+     * 盤面全体を「マスのタイル → カーソル」の順に重ねて描画する。
      * 描画順を上から下に読むだけで全体の見た目が組み立てられるようにしている。
      */
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        drawBoardBackground(g);
-        drawAllDiscs(g);
+        drawAllTiles(g);
         drawCursorHighlight(g);
     }
 
-    private void drawBoardBackground(Graphics g) {
-        g.drawImage(images.getBoardImage(), 0, 0, getWidth(), getHeight(), this);
-    }
-
-    private void drawAllDiscs(Graphics g) {
+    private void drawAllTiles(Graphics g) {
         for (int row = 0; row < Board.SIZE; row++) {
             for (int col = 0; col < Board.SIZE; col++) {
-                drawDiscIfPresent(g, new Position(row, col));
+                drawTileAt(g, new Position(row, col));
             }
         }
     }
 
-    private void drawDiscIfPresent(Graphics g, Position position) {
-        Disc disc = board.discAt(position);
-        if (disc == Disc.EMPTY) {
-            return;
-        }
-        Image discImage = (disc == Disc.BLACK) ? images.getBlackDiscImage() : images.getWhiteDiscImage();
-        g.drawImage(discImage, position.col() * CELL_SIZE, position.row() * CELL_SIZE,
+    private void drawTileAt(Graphics g, Position position) {
+        Image tile = images.getTileFor(board.discAt(position));
+        g.drawImage(tile, position.col() * CELL_SIZE, position.row() * CELL_SIZE,
                 CELL_SIZE, CELL_SIZE, this);
     }
 

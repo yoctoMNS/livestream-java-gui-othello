@@ -11,7 +11,7 @@
   - Command: `GameCommand`, `MoveCursorCommand`, `PlaceDiscCommand`
 - WASDキーでカーソル移動、Enterキーで石を配置
 - カーソル移動・石の配置それぞれで効果音を再生（`javax.sound.sampled` でサイン波をその場生成、音声ファイル不要）
-- 盤面・黒石・白石の画像は `resources/` にPNGとして格納し `ImageIO` で読み込み
+- 盤面・黒石・白石の画像は `resources/tiles.png` の1枚にまとめたタイルマップとして格納し、`ImageIO` で読み込んでから切り出して使用
 
 ## 実行方法
 
@@ -24,10 +24,16 @@ java -cp out othello.Main
 
 ## 画像素材について
 
-`resources/board.png` `resources/black.png` `resources/white.png` は、
+`resources/tiles.png` は、
 `othello.PlaceholderImageGenerator`（`src/othello/PlaceholderImageGenerator.java`）を
 一度だけ実行して生成したプレースホルダー画像です。実行時にこのツールが
 呼ばれることはなく、生成済みのPNGファイルをそのまま `Main` が読み込みます。
+
+この1枚には左から「空きマス(緑地のみ)」「黒石入りマス」「白石入りマス」の
+3タイル(各60x60px)が横一列に並んでおり、`BoardImages` がタイルマップとして
+読み込んだうえで `BufferedImage#getSubimage` で3タイルに切り出します。
+`BoardPanel` は各マスの状態に応じたタイル画像をそのまま敷き詰めて盤面を描画するため、
+背景画像と石の画像を別々に重ね描きする必要がありません。
 
 再生成する場合:
 

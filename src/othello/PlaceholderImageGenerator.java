@@ -11,51 +11,54 @@ import java.nio.file.Path;
 import javax.imageio.ImageIO;
 
 /**
- * 盤面・黒石・白石のプレースホルダー画像を生成し、resources フォルダに
- * PNG として保存するための一回限りの開発用ツール。
+ * 盤面描画用のタイルマップ画像を生成し、resources フォルダに
+ * PNG1枚として保存するための一回限りの開発用ツール。
  *
  * <p>本番のゲーム実行(Main)からは呼び出されない。実際の画像素材を
  * 用意する代わりに、この {@code main} メソッドを一度だけ実行して
- * {@code resources/board.png} などを生成しておく、という位置づけである。</p>
+ * {@code resources/tiles.png} を生成しておく、という位置づけである。</p>
+ *
+ * <p>生成される1枚の画像には、左から順に
+ * 「空きマス(緑地のみ)」「黒石入りマス」「白石入りマス」の
+ * 3タイルが横一列に並んでおり、{@link BoardImages} がこれを
+ * タイルマップとして読み込み、マスごとに切り出して使う。</p>
  */
 public final class PlaceholderImageGenerator {
 
-    private static final int BOARD_IMAGE_SIZE = 480;
-    private static final int DISC_IMAGE_SIZE = 60;
+    private static final int TILE_SIZE = BoardImages.TILE_SIZE;
+    private static final int TILE_COUNT = 3;
 
     public static void main(String[] args) throws IOException {
         Files.createDirectories(Path.of("resources"));
-        saveBoardImage();
-        saveDiscImage(Color.BLACK, "black.png");
-        saveDiscImage(Color.WHITE, "white.png");
+        saveTileSheetImage();
     }
 
-    private static void saveBoardImage() throws IOException {
-        BufferedImage image = new BufferedImage(BOARD_IMAGE_SIZE, BOARD_IMAGE_SIZE,
-                BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = image.createGraphics();
-        g.setColor(new Color(0, 128, 0));
-        g.fillRect(0, 0, BOARD_IMAGE_SIZE, BOARD_IMAGE_SIZE);
-        g.setColor(Color.BLACK);
-        int cellSize = BOARD_IMAGE_SIZE / 8;
-        for (int i = 0; i <= 8; i++) {
-            g.drawLine(i * cellSize, 0, i * cellSize, BOARD_IMAGE_SIZE);
-            g.drawLine(0, i * cellSize, BOARD_IMAGE_SIZE, i * cellSize);
-        }
-        g.dispose();
-        ImageIO.write(image, "png", new File("resources/board.png"));
-    }
-
-    private static void saveDiscImage(Color color, String fileName) throws IOException {
-        BufferedImage image = new BufferedImage(DISC_IMAGE_SIZE, DISC_IMAGE_SIZE,
+    private static void saveTileSheetImage() throws IOException {
+        BufferedImage sheet = new BufferedImage(TILE_SIZE * TILE_COUNT, TILE_SIZE,
                 BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = image.createGraphics();
+        Graphics2D g = sheet.createGraphics();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setColor(color);
-        g.fillOval(4, 4, DISC_IMAGE_SIZE - 8, DISC_IMAGE_SIZE - 8);
-        g.setColor(Color.GRAY);
-        g.drawOval(4, 4, DISC_IMAGE_SIZE - 8, DISC_IMAGE_SIZE - 8);
+        drawEmptyTile(g, 0);
+        drawDiscTile(g, 1, Color.BLACK);
+        drawDiscTile(g, 2, Color.WHITE);
         g.dispose();
-        ImageIO.write(image, "png", new File("resources/" + fileName));
+        ImageIO.write(sheet, "png", new File("resources/tiles.png"));
+    }
+
+    private static void drawEmptyTile(Graphics2D g, int tileIndex) {
+        int x = tileIndex * TILE_SIZE;
+        g.setColor(new Color(0, 128, 0));
+        g.fillRect(x, 0, TILE_SIZE, TILE_SIZE);
+        g.setColor(Color.BLACK);
+        g.drawRect(x, 0, TILE_SIZE - 1, TILE_SIZE - 1);
+    }
+
+    private static void drawDiscTile(Graphics2D g, int tileIndex, Color discColor) {
+        drawEmptyTile(g, tileIndex);
+        int x = tileIndex * TILE_SIZE;
+        g.setColor(discColor);
+        g.fillOval(x + 4, 4, TILE_SIZE - 8, TILE_SIZE - 8);
+        g.setColor(Color.GRAY);
+        g.drawOval(x + 4, 4, TILE_SIZE - 8, TILE_SIZE - 8);
     }
 }
