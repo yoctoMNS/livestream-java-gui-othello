@@ -9,11 +9,15 @@ package othello;
  */
 public final class Cursor {
 
+    // 今カーソルがある行番号・列番号。Boardのcellsと同じく0始まり。
+    // フィールドの初期値は書いていないが、この後のコンストラクタで必ず設定される。
     private int row;
     private int col;
 
     /** 盤面中央付近のマスを選択した状態で開始する。 */
     public Cursor() {
+        // "this.row" の "this" は「今作られようとしているCursorインスタンス自身」を指す。
+        // 引数がない今回は必須ではないが、「フィールドのrow」であることを明示するために書いている。
         this.row = 3;
         this.col = 3;
     }
@@ -28,16 +32,23 @@ public final class Cursor {
      * @param colDelta 列方向の移動量(左へ移動なら -1、右へ移動なら +1)
      */
     public void moveBy(int rowDelta, int colDelta) {
+        // 現在地に移動量を足した「新しい行番号の候補」を求め、
+        // それが0〜7の範囲を超えていたら0や7に丸め込む(clampToBoardRangeが行う)。
         row = clampToBoardRange(row + rowDelta);
         col = clampToBoardRange(col + colDelta);
     }
 
     /** 現在カーソルが指しているマスの座標を返す。 */
+    // 内部で持っているrow, colから、盤面座標を表すPositionオブジェクトを作って返す。
     public Position getPosition() {
         return new Position(row, col);
     }
 
+    // 与えられた値を「0以上、Board.SIZE-1(=7)以下」の範囲に収める処理。
+    // 例えば value が -1 なら 0 に、8なら7に、3ならそのまま3になる。
     private int clampToBoardRange(int value) {
+        // Math.min(7, value) で「7より大きくならないように」上限を抑え、
+        // さらに Math.max(0, ...) で「0より小さくならないように」下限を抑える。
         return Math.max(0, Math.min(Board.SIZE - 1, value));
     }
 }

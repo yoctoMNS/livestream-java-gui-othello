@@ -1,3 +1,6 @@
+// このファイルが所属する「パッケージ」の宣言。
+// パッケージはファイルをグループ分けするための箱のようなもので、
+// 同じ othello パッケージ内のクラス同士は import なしで自由に使い合える。
 package othello;
 
 /**
@@ -7,10 +10,16 @@ package othello;
  * boolean や文字コードではなく列挙型として表現することで、
  * コンパイル時に不正な状態を作れないようにしている。</p>
  */
+// enum(列挙型)は「取りうる値がこれだけしかない」ということを
+// コンパイラに伝えるための特別なクラス。
+// 例えば boolean だと true/false の2値しか表せず「石がまだ置かれていない」
+// という3つ目の状態を表現できないため、ここでは enum を使っている。
 public enum Disc {
-    EMPTY,
-    BLACK,
-    WHITE;
+    EMPTY, // まだ石が置かれていない、空のマスを表す値
+    BLACK, // 黒い石が置かれているマスを表す値
+    WHITE; // 白い石が置かれているマスを表す値
+    // ↑ 列挙型の値の最後には「;」(セミコロン)を書く。
+    //   これがないと、この下にあるメソッドをまとめて書けない。
 
     /**
      * この石の対戦相手側の石を返す。
@@ -22,11 +31,20 @@ public enum Disc {
      * @return 自分が BLACK なら WHITE、WHITE なら BLACK
      * @throws IllegalStateException EMPTY に対して呼び出した場合
      */
+    // 「public」は他のクラスからも呼び出せることを意味する修飾子。
+    // 「Disc」は戻り値の型で、このメソッドが Disc の値を1つ返すことを示す。
+    // 「opponent()」がメソッド名で、引数は何も受け取らない(丸括弧の中が空)。
     public Disc opponent() {
+        // switch式: this(呼び出し元の自分自身の値)がどのケースに当てはまるかで
+        // 処理を振り分ける。従来のif文の連続より簡潔に書ける新しい書き方。
         return switch (this) {
+            // 自分がBLACKならWHITEを返す(-> の右側が返す値)
             case BLACK -> WHITE;
+            // 自分がWHITEならBLACKを返す
             case WHITE -> BLACK;
+            // 自分がEMPTY(石がない)の場合、対戦相手という概念が存在しないため、
+            // 例外(プログラムの異常事態を知らせる仕組み)を投げて処理を止める。
             case EMPTY -> throw new IllegalStateException("空きマスに対戦相手は存在しません");
         };
     }
-}
+} // Disc クラス(列挙型)の定義はここまで
